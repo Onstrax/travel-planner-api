@@ -24,19 +24,30 @@ REST_COUNTRIES_BASE_URL=https://restcountries.com/v3.1
 
 ### 1.3. Asegurar que MongoDB esté corriendo
 
-**Opción A:** servicio local (por ejemplo, en CachyOS / Arch):
-```bash
-sudo systemctl start mongodb
+**Opción A:** Servicio local (instalado mediante el MSI oficial de MongoDB Community Server)
+
+1. Instala MongoDB Community Server desde la página oficial: https://www.mongodb.com/try/download/community
+2. Durante la instalación, deja seleccionada la opción "Install MongoDB as a Service".
+3. Una vez instalado, el servicio se inicia automáticamente.
+4. Si deseas iniciarlo manualmente, abre PowerShell como Administrador y ejecuta:
+```cmd
+   net start MongoDB
+```
+5. Para detenerlo:
+```cmd
+   net stop MongoDB
 ```
 
-**Opción B:** usando Docker (si lo tienes instalado):
-```bash
-docker run -d \
-  --name mongo-travel \
-  -p 27017:27017 \
-  -e MONGO_INITDB_ROOT_USERNAME=root \
-  -e MONGO_INITDB_ROOT_PASSWORD=secret \
-  mongo:7
+El servicio queda escuchando en:
+```
+mongodb://localhost:27017
+```
+
+**Opción B:** Usando Docker Desktop (recomendado):
+
+Si tienes Docker Desktop instalado en Windows, ejecuta:
+```cmd
+docker run -d --name mongo-travel -p 27017:27017 mongo:7
 ```
 
 ### 1.4. Ejecutar la API
