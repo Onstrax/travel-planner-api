@@ -1,19 +1,22 @@
 // src/countries/countries.service.ts
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Country, CountryDocument } from './schemas/country.schema';
 import { CountryDto } from '../common/dtos/country.dto';
 import { RestCountriesProvider } from './rest-countries.provider';
+import { TravelPlan, TravelPlanDocument } from 'src/travel-plans/schemas/travel-plan.schema';
 
 @Injectable()
 export class CountriesService {
   constructor(
     @InjectModel(Country.name)
     private readonly countryModel: Model<CountryDocument>,
+    @InjectModel(TravelPlan.name)
+    private readonly travelPlanModel: Model<TravelPlanDocument>,
     private readonly restCountriesProvider: RestCountriesProvider,
-  ) {}
+  ) { }
 
   private toDto(
     country: CountryDocument,
@@ -65,4 +68,29 @@ export class CountriesService {
 
     return this.toDto(saved, 'api');
   }
+
+  async deleteFromCache(alpha3Code: string): Promise<string> {
+    const code = alpha3Code.toUpperCase();
+
+    const plansCount = await this.travelPlanModel
+      .countDocuments({ countryCode: code })
+      .exec();
+
+    if (plansCount > 0) {
+      throw new BadRequestException(
+        `Cannot delete country ${code} because there are ${plansCount} travel plan(s) associated`,
+      );
+    }
+
+    const result = await this.countryModel
+      .deleteOne({ alpha3Code: code })
+      .exec();
+
+    if (result.deletedCount === 0) {
+      throw new NotFoundException(`Country with code ${code} not found`);
+    }
+
+    return `Country ${code} deleted from cache`;
+  }
+
 }

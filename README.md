@@ -205,3 +205,28 @@ Entidad que representa un plan de viaje para un país.
 | **endDate** | `Date` | Fecha de fin del viaje. |
 | **notes** | `string` (opcional) | Notas adicionales relacionadas con el viaje (comentarios, ideas, etc.). |
 | **createdAt** | `Date` | Fecha de creación del plan de viaje, generada por Mongoose (timestamps). |
+
+## Extensión de la API
+
+Se extendió la API para incorporar operaciones más avanzadas de administración y observabilidad. Por un lado, se añadió un endpoint protegido que permite eliminar países de la caché de MongoDB (`DELETE /countries/:code`), con lógica que impide borrar países que estén siendo usados por planes de viaje. Por otro lado, se agregó un middleware de logging que registra la actividad de la API para las rutas `/countries` y `/travel-plans`, incluyendo método HTTP, ruta, código de estado y tiempo de respuesta, lo que facilita el monitoreo y depuración.
+
+### Endpoint protegido y guard de autorización
+
+El nuevo endpoint `DELETE /countries/:alpha3Code` permite eliminar un país de la caché (colección `countries`). Antes de borrar, el servicio verifica si existen planes de viaje asociados en la colección de `travelplans` (filtra por `countryCode`). Si hay planes asociados, se responde con un error 400 (Bad Request) y no se realiza el borrado. Si el país no existe en la caché, se responde con 404 (Not Found).
+
+Este endpoint está protegido por un **Guard de autorización** que revisa el header `delete-token` en la petición y lo compara con un token configurado en el archivo `.env` mediante la variable `COUNTRIES_DELETE_TOKEN`. Si el header no está presente o el valor no coincide con el token esperado, el guard lanza una excepción 403 (Forbidden) y la petición nunca llega al controlador.
+
+**Para validar el funcionamiento:**
+
+1. Enviar un `DELETE` sin header `delete-token` y comprobar que responde **403**.
+2. Enviar un `DELETE` con un token incorrecto y verificar que también responde **403**.
+3. Enviar un `DELETE` con el token correcto pero con planes de viaje asociados a ese país y comprobar que responde **400**.
+4. Finalmente, eliminar un país que exista en caché y no tenga planes asociados, con el token correcto, y verificar que responde con un mensaje de éxito y código **200**.
+
+### Middleware de logging
+
+Se implementó un **middleware de logging** que se aplica a todas las rutas (`/*`) a nivel de `AppModule`. Este middleware intercepta cada petición, registra la hora de inicio, deja pasar la request y, cuando la respuesta termina (evento `finish`), calcula el tiempo total de procesamiento y escribe por consola una línea con el formato: método HTTP, ruta solicitada, código de estado y duración en milisegundos.
+
+De esta forma, cualquier operación sobre países o planes de viaje (GET, POST, DELETE, etc.) queda registrada en la salida estándar del servidor.
+
+**Para validar su funcionamiento:** basta con realizar cualquier petición y observar en la consola donde se está ejecutando NestJS que se imprimen los logs correspondientes a cada request.

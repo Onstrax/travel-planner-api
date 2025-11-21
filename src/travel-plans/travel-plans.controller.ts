@@ -7,7 +7,7 @@ import { TravelPlanDto } from '../common/dtos/travel-plan.dto';
 
 @Controller('travel-plans')
 export class TravelPlansController {
-  constructor(private readonly travelPlansService: TravelPlansService) {}
+  constructor(private readonly travelPlansService: TravelPlansService) { }
 
   @Post()
   async create(@Body() dto: CreateTravelPlanDto): Promise<TravelPlanDto> {

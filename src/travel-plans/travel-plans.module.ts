@@ -17,4 +17,4 @@ import { CountriesModule } from '../countries/countries.module';
   controllers: [TravelPlansController],
   providers: [TravelPlansService],
 })
-export class TravelPlansModule {}
+export class TravelPlansModule { }
