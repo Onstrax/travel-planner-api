@@ -12,11 +12,26 @@
     <ul>
       <li>GET /countries</li>
       <li>GET /countries/:code</li>
+      <li>DELETE /countries/:code</li>
       <li>GET /travel-plans</li>
       <li>GET /travel-plans/:id</li>
       <li>POST /travel-plans</li>
     </ul>
 
-    <p>Ejemplo de país: /countries/COL</p>
+    <h3>Notas</h3>
+    <ul>
+      <li>Ejemplo de país: <code>/countries/COL</code></li>
+      <li>
+        El endpoint <code>DELETE /countries/:code</code> está protegido:
+        requiere el header <code>x-delete-token</code> con el valor configurado
+        en la variable <code>COUNTRIES_DELETE_TOKEN</code> del archivo
+        <code>.env</code>.
+      </li>
+      <li>
+        Las rutas <code>/countries</code> y <code>/travel-plans</code> están
+        registradas por un middleware de logging que registra método, ruta,
+        código de estado y tiempo de respuesta en la consola del servidor.
+      </li>
+    </ul>
   </body>
 </html>
